@@ -35,6 +35,32 @@ A full one-shot example:
 env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u all_proxy ssh -i /home/hatch/.ssh/id_ed25519 -o BatchMode=yes -o ConnectTimeout=15 -p 22 ${MUSE_SEO_VPS_USER:-root}@${MUSE_SEO_VPS_HOST:-15.204.157.16} 'export CLAUDE_SEO_PYTHON=/root/.local/bin/python3.12; /root/.claude/skills/seo/scripts/claude-seo run page_checks.py --url https://wirelessmouse.net/ --json'
 ```
 
+## Upstream runtime inventory — what a fresh VPS install must have
+
+The Muse skill in this repo is only 4 files. It does NOT contain the upstream code: it calls the claude-seo runtime installed on the VPS. When moving to another VPS, install the full upstream runtime first and verify it against this inventory (counted 2026-11-19 from the local copy of v2.6.2; file counts exclude `.git`).
+
+- Upstream repo: https://github.com/AgriciDaniel/claude-seo, v2.6.2.
+- Total: 575 files, 13 MB on disk including `.git` (9.5 MB working tree).
+- 29 skills in `skills/`: seo, seo-agentic, seo-audit, seo-backlinks, seo-bing, seo-cluster, seo-competitor-pages, seo-content, seo-content-brief, seo-dataforseo, seo-drift, seo-ecommerce, seo-flow, seo-geo, seo-google, seo-hreflang, seo-image-gen, seo-images, seo-local, seo-maps, seo-page, seo-plan, seo-posthog, seo-programmatic, seo-schema, seo-shopify, seo-sitemap, seo-sxo, seo-technical.
+- 20 agents in `agents/` (one `.md` file each): seo-agentic, seo-backlinks, seo-cluster, seo-content, seo-dataforseo, seo-drift, seo-ecommerce, seo-flow, seo-geo, seo-google, seo-image-gen, seo-local, seo-maps, seo-performance, seo-posthog, seo-schema, seo-sitemap, seo-sxo, seo-technical, seo-visual.
+- 67 Python scripts in `scripts/` — these are what the launcher runs (`page_checks.py`, `transport_check.py`, `sitemap_discovery.py`, `fetch_page.py`, `parse_html.py`, `content_quality.py`, `agentic_check.py`, `pagespeed_check.py`, and the rest).
+- 11 extensions in `extensions/`: ahrefs, banana, bing-webmaster, dataforseo, firecrawl, matomo, posthog, profound, seranking, shopify, unlighthouse.
+- 157 test files in `tests/` (`test_*.py`), about 1,928 test functions (counted with grep).
+
+Fresh VPS install checklist:
+
+1. Clone the upstream repo to `/root/claude-seo` on the new VPS.
+2. Install the skill to `/root/.claude/skills/seo/` with Python 3.12 (`CLAUDE_SEO_PYTHON=/root/.local/bin/python3.12`). Do not run scripts from the repo copy at `/root/claude-seo/scripts/claude-seo`; only the installed launcher reports ready.
+3. Verify the install with the launcher: `/root/.claude/skills/seo/scripts/claude-seo doctor --json` must report `ready` true, Python 3.12, `browser_ready` true.
+4. Verify the inventory on the new VPS. If any count is short, the install is incomplete — do not audit until it matches:
+   - `find /root/claude-seo -path '*/.git' -prune -o -type f -print | wc -l` → 575
+   - `ls /root/claude-seo/skills | wc -l` → 29
+   - `ls /root/claude-seo/agents | wc -l` → 20
+   - `ls /root/claude-seo/scripts/*.py | wc -l` → 67
+   - `ls /root/claude-seo/extensions | wc -l` → 11
+   - `find /root/claude-seo/tests -name 'test_*.py' | wc -l` → 157
+5. Add Muse's SSH key to the new VPS and set `MUSE_SEO_VPS_HOST` to the new IP (and `MUSE_SEO_VPS_USER` if the login differs). The skill reads both from the environment; the defaults still point at the old VPS.
+
 ## Step 0. Check runtime readiness
 
 Run this before the audit and stop if it reports not ready.
