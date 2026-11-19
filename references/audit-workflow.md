@@ -37,7 +37,7 @@ env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u al
 
 ## Upstream runtime inventory — what a fresh VPS install must have
 
-The Muse skill in this repo is only 4 files. It does NOT contain the upstream code: it calls the claude-seo runtime installed on the VPS. When moving to another VPS, install the full upstream runtime first and verify it against this inventory (counted 2026-11-19 from the local copy of v2.6.2; file counts exclude `.git`).
+The Muse skill itself is only 4 files. The upstream runtime it calls is vendored in this repo under `muse-ai/` (a verbatim copy of claude-seo v2.6.2, MIT-licensed; the code inside still calls itself claude-seo, so install it to `/root/claude-seo` on the VPS). When moving to another VPS, copy that folder over and verify it against this inventory (counted 2026-11-19; file counts exclude `.git`). Paths below are relative to `muse-ai/`.
 
 - Upstream repo: https://github.com/AgriciDaniel/claude-seo, v2.6.2.
 - Total: 575 files, 13 MB on disk including `.git` (9.5 MB working tree).
@@ -49,7 +49,7 @@ The Muse skill in this repo is only 4 files. It does NOT contain the upstream co
 
 Fresh VPS install checklist:
 
-1. Clone the upstream repo to `/root/claude-seo` on the new VPS.
+1. Clone this repo to the new VPS and copy the vendored runtime into place: `git clone https://github.com/gltinfo/MUSEAI-Seo && cp -r MUSEAI-Seo/muse-ai /root/claude-seo` (the upstream GitHub repo https://github.com/AgriciDaniel/claude-seo is the fallback source).
 2. Install the skill to `/root/.claude/skills/seo/` with Python 3.12 (`CLAUDE_SEO_PYTHON=/root/.local/bin/python3.12`). Do not run scripts from the repo copy at `/root/claude-seo/scripts/claude-seo`; only the installed launcher reports ready.
 3. Verify the install with the launcher: `/root/.claude/skills/seo/scripts/claude-seo doctor --json` must report `ready` true, Python 3.12, `browser_ready` true.
 4. Verify the inventory on the new VPS. If any count is short, the install is incomplete — do not audit until it matches:
