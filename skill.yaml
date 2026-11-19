@@ -1,0 +1,5 @@
+name: "seo-audit"
+title: "SEO Audit"
+description: "Run a full SEO audit of any website with deterministic checks on the VPS and parallel subagents, then deliver a scored report and action plan."
+category: "Work and knowledge"
+include_in_prompt: true
